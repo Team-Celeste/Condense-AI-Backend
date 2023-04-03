@@ -1,9 +1,10 @@
 require("dotenv/config")
+const fs = require('fs')
 
 const OpenAI = require("openai")
 const { Configuration, OpenAIApi } = OpenAI;
 const configuration = new Configuration({
-  organization: process.env.OPENAI_ORG,
+  // organization: process.env.OPENAI_ORG,
   apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
@@ -25,7 +26,6 @@ var storage = multer.diskStorage({
 })
 var uploadSave = multer({ storage: storage });
 
-
 const ytFunction = require("../controllers/yttranscipt");
 const pdftotext = require("../controllers/pdftotext");
 const audiototext = require("../controllers/audiototext");
@@ -38,44 +38,44 @@ router.get('/', async (req, res, next) => {
 });
 
 router.post('/', async (req, res, next) => {
-  const prompt = req.query.valid
-  console.log(prompt);
+  // const prompt = req.query.valid
+  // console.log(prompt);
 
-  let text=req.body.message;
+  let text = req.body.message;
   console.log(text);
 
-  // const response =  await openai.createCompletion({
-  //   model: "text-davinci-003",
-  //   prompt: "Summarize in around 200 words.\n\nText:" + text,
-  //   temperature: 0.6,
-  //   max_tokens: 400,
-  //   top_p: 0.5,
-  //   best_of: 2,
-  //   frequency_penalty: 0.3,
-  //   presence_penalty: 0.7,
-  // });
-  res.status(200).json({ message: 'Process Completed.' });
+  const response = await openai.createCompletion({
+    model: "text-davinci-003",
+    prompt: "Summarize in around 200 words.\n\nText:" + text,
+    temperature: 0.6,
+    max_tokens: 400,
+    top_p: 0.5,
+    best_of: 2,
+    frequency_penalty: 0.3,
+    presence_penalty: 0.7,
+  });
+  // res.status(200).json({ message: 'Process Completed.' });
 
-  // res.status(200).json({ message: 'Process Completed.', "Summary":response.data["choices"][0]["text"]});
+  res.status(200).json({ message: 'Process Completed.', "Summary": response.data["choices"][0]["text"] });
 });
 
 router.get('/youtubeURL', async (req, res, next) => {
   const prompt = req.query.valid
-  console.log("sfagsdgsafgf");
+  console.log("Youtube URL\n");
 
   const text = await ytFunction.ytFunction(prompt);
-  console.log(text)
+  // console.log(text)
 
   const response = await openai.createCompletion({
     model: "text-davinci-003",
-    prompt: "Summarize in around 200 words. in english language\n\nText:" + text,
+    prompt: "Summarize in around 200 words in english language.\n\nText:" + text,
     temperature: 0.6,
     max_tokens: 400,
     top_p: 0.5,
     best_of: 2,
     frequency_penalty: 0.3,
   });
-
+  // res.status(200);
   res.status(200).json({ "message": 'Process Completed.', "Summary": response.data["choices"][0]["text"] });
 });
 
@@ -106,19 +106,26 @@ router.post('/pdf', uploadSave.single("pdf"), async (req, res, next) => {
   let text = await pdftotext.GetTextFromPDF(req.file.path)
   console.log(text);
 
+  fs.unlink(req.file.path, (err) => {
+    if (err) {
+      console.error(err)
+      return
+    }
+  })
 
-  // const response = await openai.createCompletion({
-  //   model: "text-davinci-003",
-  //   prompt: "Summarize in around 200 words.\n\nText:" + text,
-  //   temperature: 0.6,
-  //   max_tokens: 400,
-  //   top_p: 0.5,
-  //   best_of: 2,
-  //   frequency_penalty: 0.3,
-  //   presence_penalty: 0.7,
-  // });
-  res.status(200);
-  // res.status(200).json({ message: 'Process Completed.', "Summary": response.data["choices"][0]["text"] });
+
+  const response = await openai.createCompletion({
+    model: "text-davinci-003",
+    prompt: "Summarize in around 200 words.\n\nText:" + text,
+    temperature: 0.6,
+    max_tokens: 400,
+    top_p: 0.5,
+    best_of: 2,
+    frequency_penalty: 0.3,
+    presence_penalty: 0.7,
+  });
+  // res.status(200);
+  res.status(200).json({ message: 'Process Completed.', "Summary": response.data["choices"][0]["text"] });
 });
 
 module.exports = router;
