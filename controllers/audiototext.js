@@ -3,7 +3,7 @@ const axios = require("axios");
 const assembly = axios.create({
     baseURL: "https://api.assemblyai.com/v2",
     headers: {
-        authorization: "37e159ced93445cd9dd4addc3ce145ff",
+        authorization: process.env.ASSAI_API_KEY,
         "transfer-encoding": "chunked",
     },
 });
@@ -11,7 +11,7 @@ const assembly = axios.create({
 const assembly2 = axios.create({
     baseURL: "https://api.assemblyai.com/v2",
     headers: {
-        authorization: "37e159ced93445cd9dd4addc3ce145ff",
+        authorization: process.env.ASSAI_API_KEY,
     },
 });
 
